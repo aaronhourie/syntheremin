@@ -10,11 +10,15 @@ You'll need the following libraries installed from github:
     VL53L0X from https://github.com/johnbryanmoore/VL53L0X_rasp_python
 
 You'll need the following libraries from pip:
-    Adafruit_ADS1x15    https://pypi.python.org/pypi/Adafruit-ADS1x15/1.0.2
-    luma                https://pypi.python.org/pypi/luma.core
-    pillow              https://pypi.python.org/pypi/Pillow
-    pyserial            https://pypi.python.org/pypi/pyserial
-    pyaudio
+
+| Package name      | PyPi link                                     |
+| ----------------- | --------------------------------------------- |
+| Adafruit_ADS1x15  | https://pypi.python.org/pypi/Adafruit-ADS1x15 |
+| luma              | https://pypi.python.org/pypi/luma.core        |
+| pillow            | https://pypi.python.org/pypi/Pillow           |
+| pyayudio          | https://pypi.python.org/pypi/PyAudio          |
+| pyserial          | https://pypi.python.org/pypi/pyserial         |
+
 
 You'll also have to enable i2c communication on your Raspberry Pi.
 

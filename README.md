@@ -23,4 +23,4 @@ You'll need the following libraries from pip:
 You'll also have to enable i2c communication on your Raspberry Pi.
 
 
-![Syntheremin Image](https://raw.githubusercontent.com/aaronhourie/syntheremin/master/image.jpg)
+![Syntheremin Image](https://raw.githubusercontent.com/aaronhourie/syntheremin/master/synth.png)

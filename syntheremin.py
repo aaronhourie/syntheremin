@@ -16,16 +16,22 @@ from luma.core.interface.serial import i2c
 from luma.core.render import canvas
 from luma.oled.device import sh1106
 
+# Is running.
 connected = True
 
+# Raspberry PI shutdown pins for TOF.
+# This is needed to remap I2C addresses.
 TOF1_XSHUT = 27
 TOF0_XSHUT = 17
 
+# Gain for the ADC signal.
 ANALOG_GAIN=1
 
+# Configuration for the OLED display.
 serial_oled = i2c(port=1, address=0x3c)
 device_oled = sh1106(serial_oled)
 
+# Shared signal generator.
 sig_gen = None
 
 def main():
@@ -36,6 +42,8 @@ def main():
     adc = start_adc()
     theremin_loop(tof0, tof1, audio, adc, sig_gen)
 
+# Main program loop. Checks sensor values and updates signal generator
+# parameters.
 def theremin_loop(tof0, tof1, audio, adc, sig_gen):
     global connected
     try:
@@ -43,27 +51,36 @@ def theremin_loop(tof0, tof1, audio, adc, sig_gen):
         if (timing < 20000):
             timing = 20000
         while connected:
+            # Pitch is taken from tof0 distance.
             pitch = 150 + tof0.get_distance()
+            # Volume is taken from tof1 distance.
             volume = 2.0 - (float(tof1.get_distance()) / 100)
+            # Analog channel 0 determines the triangle wave magnitude.
             analog_value = adc.read_adc(0, gain=ANALOG_GAIN) / 32000.0
+            # Ensure that the pitch remains in the audible range (ish).
             if pitch != 0 and pitch < 800:
                 sig_gen.frequency = float(pitch)
+            # Ensure that the volume doesn't go into negative values.
             if volume > 0:
                 sig_gen.volume= volume
+            # Likewise for magnitude
             if analog_value > 0:
                 sig_gen.waves[1].magnitude = analog_value
+            # Ensure TOF is not overpolled (TOF library recommends this?)
             time.sleep(timing/1000000.00)
 
     except KeyboardInterrupt:
         print("Caught keyboard interrupt. Exiting...")
         connected = False
     finally:
+        # Cleanup
         tof0.stop_ranging()
         tof1.stop_ranging()
         audio.stop_audio()
 
 
 def start_audio():
+    # Initial parameters.
     saw = Waveform(saw_wave)
     sine = Waveform(sine_wave)
     square = Waveform(square_wave)
@@ -113,6 +130,7 @@ def start_oled():
     thread = threading.Thread(target=oled_loop)
     thread.start()
 
+# Draw wavetable on the oled display.
 def oled_loop():
     global sig_gen
     while connected:
@@ -122,16 +140,18 @@ def oled_loop():
             time.sleep(1)
 
 
+# Draw the wave table on the oled.
 def draw_canvas(sig_gen, draw):
-
+    # Generate wavetable
     wave_table = sig_gen.generate_wavetable(128, 64, 3)
-
     x = 0
     last_y = -1
     for y in wave_table:
+        # Draw each known point.
         y = int(round(y)) + 32
         if y > 0:
             draw.point((x, y), fill="white")
+            # Interpolate values seperated on the y-axis
             if last_y > 0 and abs(y - last_y):
                 lower = min(last_y, y)
                 upper = max(last_y, y)
